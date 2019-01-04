@@ -1,6 +1,6 @@
 # RASOFP
 
-RASOFP is a program that ReArrange the Solution Of each variable of each Flexible Panel surface into separate files and merge the local solutions of flexible panel to a global solution.
+RASOFP is a post-processing program for CESE. It can ReArrange the Solution Of each variable of each Flexible Panel surface into separate files and merge the local solutions of flexible panel to a global solution.
 
 
 Required files are listed as the following.
