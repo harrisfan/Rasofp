@@ -98,7 +98,7 @@ void readFPanelResult(string FPanelResultFliename, vector<FPanelResultStruct> &G
   cout << "Done!";
 }
 
-void readFPanelInfo(map<int, int> &FPSurfaceMap, int MPIflag)
+void readFPanelInfo(map<int, int> &FPSurfaceMap, map<int, int> &firstFlemFlag, int MPIflag)
 {
   string FPanelInfoFliename = "FPanelInfo.dat", tempString;
   int tempInt, index, elemNo, surfaceNo(0);
@@ -118,9 +118,13 @@ void readFPanelInfo(map<int, int> &FPSurfaceMap, int MPIflag)
     if (MPIflag == 1)
       FPanelInfoFlie >> index >> tempInt >> tempInt >> elemNo >> tempInt >> tempInt >> tempInt 
         >> tempDouble >> tempDouble >> tempDouble >> tempDouble >> tempDouble >> tempDouble;
-    if (index == 1)
+    if (index == 1) {
       surfaceNo++;
+      firstFlemFlag[elemNo] = 1;
+    } else
+      firstFlemFlag[elemNo] = 0;
     FPSurfaceMap[elemNo] = surfaceNo;
+//    cout << "Reading firstFlemFlag[ " << elemNo << "] = " << firstFlemFlag[elemNo] << endl;
   }
   FPanelInfoFlie.close();
   cout << "Done!";
@@ -157,14 +161,14 @@ void readFPanelIntermediate(string FPanelResultFliename, vector<FPanelIntermedia
 int main()
 {
   string LocalFPElemMapFliename, LocalFPElemMapFlienamePrefix = "Local", LocalFPElemMapFlienameSuffix = "_FPElemMap.dat";
-  string FPanelResultFliename, FPanelResultFlienamePrefix = "FPanel-000000-", LM = "LM", dotDat = ".dat", dotBin = ".bin";
+  string FPanelResultFliename, FPanelResultFlienamePrefix = "FPanel-000000", LM = "LM", dotDat = ".dat", dotBin = ".bin";
   string outputFliename, outputFlienamePrefix = "FlexibleSurface", tempOutputFlienamePrefix;
   string dataName[FPanelDataSize] = {"-Displacement", "-Velocity", "-Acceleration", "-FluidPressure", "-BackPressure", "-FluidNormalViscousStress"};
   char rankLabel[3], surfaceLabel[3];
   vector<int> FPEProcess;
   double surfaceNumber(-1);
   bool firstLine;
-  map<int, int> FPElemMap, FPSurfaceMap;
+  map<int, int> FPElemMap, FPSurfaceMap, firstFlemFlag;
   //map<int, int>::iterator FPIterator;
   vector<FPanelResultStruct> GobalFPanelResult;
   vector<FPanelIntermediateStruct> GobalFPanelIntermediate;
@@ -204,6 +208,8 @@ int main()
       LocalFPElemMapFliename.append(LocalFPElemMapFlienameSuffix);
       readLocalFPElemMap(LocalFPElemMapFliename, FPElemMap); 
       FPanelResultFliename = FPanelResultFlienamePrefix;
+      if(processResultOrIntermediate == 0) 
+        FPanelResultFliename.append("-");
       FPanelResultFliename.append(LM);
       FPanelResultFliename.append(rankLabel);
       FPanelResultFliename.append(dotDat);
@@ -316,7 +322,7 @@ int main()
       cout << "Done!";
       break;
     default:  // Result 
-      readFPanelInfo(FPSurfaceMap, MPIflag);
+      readFPanelInfo(FPSurfaceMap, firstFlemFlag, MPIflag);
       cout << "\nWriting " << setiosflags(ios::left) << setw(57) << setfill('.') << "Final Outputs";
       for (int k = 0; k < GobalFPanelResult.size(); k++) {
         tempOutputFlienamePrefix = outputFlienamePrefix;
@@ -330,7 +336,7 @@ int main()
               outputFliename.append(dotDat);
               FPanelOutputFlie.open(outputFliename.c_str(), ios::app | ios::out);
               FPanelOutputFlie << right << setiosflags (ios::fixed | ios::showpoint) << scientific << std::setprecision(16) << setw(24);
-              if (surfaceNumber != FPSurfaceMap[GobalFPanelResult[k].elemNo]) {
+              if (firstFlemFlag[GobalFPanelResult[k].elemNo] == 1) {
                 if (FPanelOutputFlie.tellp() > 0) 
                   FPanelOutputFlie << endl;
                 FPanelOutputFlie << GobalFPanelResult[k].time << "    ";
