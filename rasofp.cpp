@@ -8,7 +8,7 @@
 
 #include "rasofp.h"
 
-const int FPanelDataSize = 6;
+const int FPanelDataSize = 5;
 
 void fileExist(fstream &file, string filename)
 {
@@ -88,7 +88,7 @@ void readFPanelResult(string FPanelResultFliename, vector<FPanelResultStruct> &G
   while (FPanelResultFlie.good()) {
     FPanelResultFlie >> tempFPanelResult.time >> tempFPanelResult.elemNo 
       >> tempFPanelResult.data[0] >> tempFPanelResult.data[1] >> tempFPanelResult.data[2] 
-      >> tempFPanelResult.data[3] >> tempFPanelResult.data[4] >> tempFPanelResult.data[5];
+      >> tempFPanelResult.data[3] >> tempFPanelResult.data[4];
     if (MPIflag == 1)
       tempFPanelResult.elemNo = FPElemMap[tempFPanelResult.elemNo];
     GobalFPanelResult.push_back(tempFPanelResult);
@@ -133,7 +133,7 @@ void readFPanelInfo(map<int, int> &FPSurfaceMap, map<int, int> &firstFlemFlag, i
 struct FPanelIntermediateStruct
 {
     int elemNo;
-    double data[FPanelDataSize-1];
+    double data[FPanelDataSize];
 };
 
 bool sortByElemNo(const FPanelIntermediateStruct &lhs, const FPanelIntermediateStruct &rhs) 
@@ -163,7 +163,7 @@ int main()
   string LocalFPElemMapFliename, LocalFPElemMapFlienamePrefix = "Local", LocalFPElemMapFlienameSuffix = "_FPElemMap.dat";
   string FPanelResultFliename, FPanelResultFlienamePrefix = "FPanel-000000", LM = "LM", dotDat = ".dat", dotBin = ".bin";
   string outputFliename, outputFlienamePrefix = "FlexibleSurface", tempOutputFlienamePrefix;
-  string dataName[FPanelDataSize] = {"-Displacement", "-Velocity", "-Acceleration", "-FluidPressure", "-BackPressure", "-FluidNormalViscousStress"};
+  string dataName[FPanelDataSize] = {"-Displacement", "-Velocity", "-Acceleration", "-FluidPressure", "-BackPressure"};
   char rankLabel[3], surfaceLabel[3];
   vector<int> FPEProcess;
   double surfaceNumber(-1);
@@ -257,8 +257,7 @@ int main()
               << setw(23) << GobalFPanelResult[k].data[1] << "\t"
               << setw(23) << GobalFPanelResult[k].data[2] << "\t"
               << setw(23) << GobalFPanelResult[k].data[3] << "\t"
-	            << setw(23) << GobalFPanelResult[k].data[4] << "\t"
-	            << setw(23) << GobalFPanelResult[k].data[5] << "\t"
+	      << setw(23) << GobalFPanelResult[k].data[4] << "\t"
               << endl;
           }
           FPanelOutputFlie.close();
@@ -299,7 +298,7 @@ int main()
           for (int k = 0; k < GobalFPanelIntermediate.size(); k++) {
             FPanelOutputFlie << setiosflags(ios::right) << setw(10) << GobalFPanelIntermediate[k].elemNo
               << setiosflags (ios::fixed | ios::showpoint);
-            for (int j = 0; j < FPanelDataSize-1; j++) {
+            for (int j = 0; j < FPanelDataSize; j++) {
               FPanelOutputFlie << setw(23) << setprecision(16) << GobalFPanelIntermediate[k].data[j];
             }
             FPanelOutputFlie << endl;
@@ -311,7 +310,7 @@ int main()
           FPanelOutputFlie.open(outputFliename.c_str(), ios::app | ios::out | ios::binary);
           for (int k = 0; k < GobalFPanelIntermediate.size(); k++) {
             FPanelOutputFlie.write(reinterpret_cast<const char *>(&GobalFPanelIntermediate[k].elemNo), sizeof(int));
-            for (int j = 0; j < FPanelDataSize-1; j++) 
+            for (int j = 0; j < FPanelDataSize; j++) 
               FPanelOutputFlie.write(reinterpret_cast<const char *>(&GobalFPanelIntermediate[k].data[j]), sizeof(double));
           }
           break;

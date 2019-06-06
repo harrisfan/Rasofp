@@ -2,6 +2,8 @@
 
 RASOFP is a post-processing program for CESE. It can ReArrange the Solution Of each variable of each Flexible Panel surface into separate files and merge the local solutions of flexible panel to a global solution.
 
+Compatible with CESE 4.3.6.0
+
 
 Required files are listed as the following.
 
@@ -43,7 +45,6 @@ Required file formats are listed as the following.
   * Column 5: Acceleration
   * Column 6: Fluid Pressure
   * Column 7: Back Pressure
-  * Column 8: Fluid Normal Viscous Stress
 
 4. FPanelInfo2.dat
   * No header
